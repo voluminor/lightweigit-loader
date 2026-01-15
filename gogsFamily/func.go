@@ -3,10 +3,11 @@ package gogsFamily
 import (
 	"fmt"
 	"io"
-	"lightweigit"
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/voluminor/lightweigit-loader"
 )
 
 // // // // // // // // // // // // // // // //

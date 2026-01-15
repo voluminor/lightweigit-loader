@@ -4,11 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"lightweigit/target"
 	"net/http"
 	"net/url"
 	"runtime"
 	"strings"
+
+	"github.com/voluminor/lightweigit-loader/target"
 )
 
 // // // // // // // // // // // // // // // //

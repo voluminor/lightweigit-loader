@@ -1,8 +1,9 @@
 package gitlab
 
 import (
-	"lightweigit"
 	"net/url"
+
+	"github.com/voluminor/lightweigit-loader"
 )
 
 // // // // // // // // // // // // // // // //

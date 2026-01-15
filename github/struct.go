@@ -1,8 +1,9 @@
 package github
 
 import (
-	"lightweigit"
 	"net/url"
+
+	"github.com/voluminor/lightweigit-loader"
 )
 
 // // // // // // // // // // // // // // // //

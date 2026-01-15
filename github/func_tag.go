@@ -3,8 +3,9 @@ package github
 import (
 	"context"
 	"fmt"
-	"lightweigit"
 	"net/url"
+
+	"github.com/voluminor/lightweigit-loader"
 )
 
 // // // // // // // // // // // // // // // //

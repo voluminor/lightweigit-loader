@@ -2,11 +2,12 @@ package global
 
 import (
 	"errors"
-	"lightweigit"
-	"lightweigit/bitbucket"
-	"lightweigit/github"
-	"lightweigit/gitlab"
-	"lightweigit/gogsFamily"
+
+	"github.com/voluminor/lightweigit-loader"
+	"github.com/voluminor/lightweigit-loader/bitbucket"
+	"github.com/voluminor/lightweigit-loader/github"
+	"github.com/voluminor/lightweigit-loader/gitlab"
+	"github.com/voluminor/lightweigit-loader/gogsFamily"
 )
 
 // // // // // // // // // // // // // // // //

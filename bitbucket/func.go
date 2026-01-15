@@ -2,8 +2,9 @@ package bitbucket
 
 import (
 	"fmt"
-	"lightweigit"
 	"net/url"
+
+	"github.com/voluminor/lightweigit-loader"
 )
 
 // // // // // // // // // // // // // // // //

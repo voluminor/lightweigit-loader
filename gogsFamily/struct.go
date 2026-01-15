@@ -1,8 +1,9 @@
 package gogsFamily
 
 import (
-	"lightweigit"
 	"net/url"
+
+	"github.com/voluminor/lightweigit-loader"
 )
 
 // // // // // // // // // // // // // // // //

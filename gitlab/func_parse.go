@@ -5,11 +5,12 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"lightweigit"
 	"net/http"
 	"net/url"
 	"regexp"
 	"strings"
+
+	"github.com/voluminor/lightweigit-loader"
 )
 
 // // // // // // // // // // // // // // // //

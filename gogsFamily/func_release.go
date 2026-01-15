@@ -4,10 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"lightweigit"
 	"net/url"
 	"path"
 	"strings"
+
+	"github.com/voluminor/lightweigit-loader"
 )
 
 // // // // // // // // // // // // // // // //

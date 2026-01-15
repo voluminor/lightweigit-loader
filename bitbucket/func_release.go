@@ -3,10 +3,11 @@ package bitbucket
 import (
 	"context"
 	"fmt"
-	"lightweigit"
 	"net/url"
 	"path"
 	"strings"
+
+	"github.com/voluminor/lightweigit-loader"
 )
 
 // // // // // // // // // // // // // // // //
