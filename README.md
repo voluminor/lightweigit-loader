@@ -1,4 +1,10 @@
-# lightweigit-loader
+[![Go Report Card](https://goreportcard.com/badge/github.com/voluminor/lightweigit-loader)](https://goreportcard.com/report/github.com/voluminor/lightweigit-loader)
+
+![GitHub repo file or directory count](https://img.shields.io/github/directory-file-count/voluminor/lightweigit-loader?color=orange)
+![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/voluminor/lightweigit-loader?color=green)
+![GitHub repo size](https://img.shields.io/github/repo-size/voluminor/lightweigit-loader)
+
+# LightweiGit Loader
 
 A lightweight, dependency-free Go library for working with **repository tags** and **releases** across different Git hosting platforms.
 
