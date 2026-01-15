@@ -13,6 +13,6 @@ runs:
         mkdir -p target tmp
         go generate ./...
 
-    - name: 📥 go mod tidy-all
+    - name: 📥 go mod tidy
       shell: bash
-      run: ./_run/scripts/go_tidy_all.sh
+      run: go mod tidy
