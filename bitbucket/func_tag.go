@@ -6,9 +6,14 @@ import (
 	"net/url"
 
 	"github.com/voluminor/lightweigit-loader"
+	"github.com/voluminor/lightweigit-loader/target"
 )
 
 // // // // // // // // // // // // // // // //
+
+func (tag *TagObj) Mod() target.ModType {
+	return target.ModBitbucketTag
+}
 
 func (tag *TagObj) String() string {
 	return tag.name

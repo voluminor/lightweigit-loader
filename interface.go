@@ -3,11 +3,15 @@ package lightweigit
 import (
 	"context"
 	"net/url"
+
+	"github.com/voluminor/lightweigit-loader/target"
 )
 
 // // // // // // // // // // // // // // // //
 
 type ProviderTagInterface interface {
+	Mod() target.ModType
+	Marshal() []byte
 	String() string
 	URL() *url.URL
 	ZIP() *url.URL
@@ -24,6 +28,8 @@ type ProviderReleaseAssetInterface interface {
 }
 
 type ProviderReleaseInterface interface {
+	Mod() target.ModType
+	Marshal() []byte
 	Name() string
 	BodyMD() string
 	URL() *url.URL

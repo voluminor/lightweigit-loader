@@ -1,6 +1,10 @@
-package global
+package tests
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/voluminor/lightweigit-loader/target/global"
+)
 
 // // // // // // // // // // // // // // // //
 
@@ -11,7 +15,7 @@ func TestGlobal(t *testing.T) {
 		"https://github.com/AI-translate-book/template-EN-to-RU/commits/v0.1.0",
 		"https://gitlab.com/Meithal/cisson/-/blob/master/CMakeLists.txt?ref_type=heads",
 	} {
-		obj, err := Parse(url)
+		obj, err := global.Parse(url)
 		if err != nil {
 			t.Error(err)
 		} else {

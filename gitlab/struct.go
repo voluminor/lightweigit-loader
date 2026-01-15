@@ -18,7 +18,6 @@ type Obj struct {
 type TagObj struct {
 	Provider *Obj
 	name     string
-	commitID string
 }
 
 type ReleaseAssetObj struct {
