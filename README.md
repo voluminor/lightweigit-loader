@@ -62,7 +62,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/voluminor/lightweigit-loader/global"
+	"github.com/voluminor/lightweigit-loader/target/global"
 )
 
 func main() {
@@ -142,7 +142,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/voluminor/lightweigit-loader/global"
+	"github.com/voluminor/lightweigit-loader/target/global"
 )
 
 func main() {
@@ -188,7 +188,7 @@ import (
 	"log"
 
 	lightweigit "github.com/voluminor/lightweigit-loader"
-	"github.com/voluminor/lightweigit-loader/global"
+	"github.com/voluminor/lightweigit-loader/target/global"
 )
 
 func main() {
@@ -255,7 +255,7 @@ import (
 	"log"
 
 	lightweigit "github.com/voluminor/lightweigit-loader"
-	"github.com/voluminor/lightweigit-loader/global"
+	"github.com/voluminor/lightweigit-loader/target/global"
 )
 
 func main() {
@@ -311,7 +311,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/voluminor/lightweigit-loader/global"
+	"github.com/voluminor/lightweigit-loader/target/global"
 )
 
 func main() {

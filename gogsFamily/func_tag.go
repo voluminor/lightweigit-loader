@@ -8,9 +8,14 @@ import (
 	"strings"
 
 	"github.com/voluminor/lightweigit-loader"
+	"github.com/voluminor/lightweigit-loader/target"
 )
 
 // // // // // // // // // // // // // // // //
+
+func (tag *TagObj) Mod() target.ModType {
+	return target.ModGogsFamilyTag
+}
 
 func (tag *TagObj) String() string {
 	return tag.name

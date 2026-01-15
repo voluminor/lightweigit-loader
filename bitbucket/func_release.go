@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/voluminor/lightweigit-loader"
+	"github.com/voluminor/lightweigit-loader/target"
 )
 
 // // // // // // // // // // // // // // // //
@@ -29,6 +30,10 @@ func (a *ReleaseAssetObj) Size() uint32 {
 }
 
 //
+
+func (rel *ReleaseObj) Mod() target.ModType {
+	return target.ModBitbucketRelease
+}
 
 func (rel *ReleaseObj) Name() string {
 	return rel.name
