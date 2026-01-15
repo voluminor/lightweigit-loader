@@ -4,10 +4,6 @@ description: 'Initialize all the modules and generate files'
 runs:
   using: 'composite'
   steps:
-    - name: 📥 go mod tidy-all
-      shell: bash
-      run: ./_run/scripts/go_tidy_all.sh
-
     - name: 🛠️ go generate
       shell: bash
       env:
@@ -16,3 +12,7 @@ runs:
         set -Eeuo pipefail
         mkdir -p target tmp
         go generate ./...
+
+    - name: 📥 go mod tidy-all
+      shell: bash
+      run: ./_run/scripts/go_tidy_all.sh
