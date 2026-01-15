@@ -16,7 +16,7 @@ on:
         required: false
 
 env:
-  GO_VERSION: "1.25"
+  GO_VERSION: "1.19"
   RELEASE_COMMAND: "git add -f target"
   PUSH_BRANCH: ${{ github.repository.default_branch }}
 
