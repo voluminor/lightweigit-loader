@@ -55,15 +55,14 @@ if len(data) < 5 {
 return nil, errors.New("not enough data")
 }
 
+switch target.ModType(data[0]) {
 {{- range $i, $dir := .Dirs }}
-
-    m{{$i}}, err := {{$dir}}.UnmarshalTag(data)
-    if err == nil {
-    return m{{$i}}, nil
-    }
+    case target.Mod{{title $dir}}Tag:
+    return {{$dir}}.UnmarshalTag(data)
 {{- end }}
-
-return nil, err
+default:
+return nil, fmt.Errorf("unknown tag mod type: %d", data[0])
+}
 }
 
 func UnmarshalRelease(data []byte) (lightweigit.ProviderReleaseInterface, error) {
@@ -71,13 +70,12 @@ if len(data) < 5 {
 return nil, errors.New("not enough data")
 }
 
+switch target.ModType(data[0]) {
 {{- range $i, $dir := .Dirs }}
-
-    m{{$i}}, err := {{$dir}}.UnmarshalRelease(data)
-    if err == nil {
-    return m{{$i}}, nil
-    }
+    case target.Mod{{title $dir}}Release:
+    return {{$dir}}.UnmarshalRelease(data)
 {{- end }}
-
-return nil, err
+default:
+return nil, fmt.Errorf("unknown release mod type: %d", data[0])
+}
 }

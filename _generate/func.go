@@ -20,6 +20,7 @@ func WriteFileFromTemplate(pathToFile string, textTemplate string, dataTemplate 
 	tmpl := template.New("cli-template").Funcs(template.FuncMap{
 		"split": strings.Split,
 		"mod":   func(a, b int) int { return a % b },
+		"title": strings.Title,
 	})
 
 	t, err := tmpl.New(fileName).Parse(textTemplate)
