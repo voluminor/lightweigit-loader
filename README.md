@@ -176,7 +176,8 @@ fmt.Println(tag.String())
 
 ### Stream tags
 
-`TagsStream` writes tags into a channel you provide. The channel is closed automatically when the stream finishes.
+`TagsStream` writes tags into a channel you provide. The caller is responsible for closing the channel after the stream
+returns:
 
 ```go
 package main
@@ -200,6 +201,7 @@ func main() {
 	ch := make(chan lightweigit.ProviderTagInterface, 32)
 
 	go func() {
+      defer close(ch)
 		_ = obj.TagsStream(ctx, ch, 0) // limit=0 means provider-defined/default behavior
 	}()
 
@@ -266,6 +268,7 @@ func main() {
 	ch := make(chan lightweigit.ProviderReleaseInterface, 16)
 
 	go func() {
+      defer close(ch)
 		_ = obj.ReleasesStream(ctx, ch, 0)
 	}()
 

@@ -92,8 +92,6 @@ func (obj *Obj) TagFind(findTag string) (lightweigit.ProviderTagInterface, error
 }
 
 func (obj *Obj) TagsStream(ctx context.Context, out chan lightweigit.ProviderTagInterface, limit int) error {
-	defer close(out)
-
 	perPage := 100
 	if limit > 0 && limit < perPage {
 		perPage = limit

@@ -66,7 +66,7 @@ type tagsRespObj struct {
 
 // //
 
-// TagLatest бере ПЕРШИЙ тег зі /refs/tags?pagelen=1&sort=-target.date (natural sorting по імені)
+// TagLatest бере ПЕРШИЙ тег зі /refs/tags?pagelen=1&sort=-target.date (сортування за датою коміта)
 func (obj *Obj) TagLatest() (lightweigit.ProviderTagInterface, error) {
 	var tr tagsRespObj
 	if err := obj.getJSON("refs/tags?pagelen=1&sort=-target.date", &tr); err != nil {
@@ -101,8 +101,6 @@ func (obj *Obj) TagFind(findTag string) (lightweigit.ProviderTagInterface, error
 }
 
 func (obj *Obj) TagsStream(ctx context.Context, out chan lightweigit.ProviderTagInterface, limit int) error {
-	defer close(out)
-
 	perPage := 100
 	if limit > 0 && limit < perPage {
 		perPage = limit
