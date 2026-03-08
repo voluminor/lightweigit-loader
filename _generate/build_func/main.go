@@ -121,7 +121,9 @@ func main() {
 
 	data.ImportsArr = make([]string, 0)
 	data.ImportsArr = append(data.ImportsArr, "errors")
+	data.ImportsArr = append(data.ImportsArr, "fmt")
 	data.ImportsArr = append(data.ImportsArr, "github.com/voluminor/lightweigit-loader")
+	data.ImportsArr = append(data.ImportsArr, "github.com/voluminor/lightweigit-loader/target")
 
 	data.Dirs = dirs
 	for _, dir := range dirs {

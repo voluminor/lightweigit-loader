@@ -214,6 +214,8 @@ func (obj *Obj) ReleaseFind(findRelease string) (lightweigit.ProviderReleaseInte
 }
 
 func (obj *Obj) ReleasesStream(ctx context.Context, out chan lightweigit.ProviderReleaseInterface, limit int) error {
+	defer close(out)
+
 	perPage := 50
 	if limit > 0 && limit < perPage {
 		perPage = limit

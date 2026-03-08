@@ -2,6 +2,7 @@ package gitlab
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/url"
 	"path"
@@ -181,7 +182,7 @@ func (obj *Obj) ReleaseFind(findRelease string) (lightweigit.ProviderReleaseInte
 	if err == nil {
 		return buildReleaseObj(obj, li), nil
 	}
-	if err != nil && err.Error() != "not found" {
+	if !errors.Is(err, lightweigit.ErrNotFound) {
 		return nil, err
 	}
 
@@ -211,6 +212,8 @@ func (obj *Obj) ReleaseFind(findRelease string) (lightweigit.ProviderReleaseInte
 }
 
 func (obj *Obj) ReleasesStream(ctx context.Context, out chan lightweigit.ProviderReleaseInterface, limit int) error {
+	defer close(out)
+
 	perPage := 100
 	if limit > 0 && limit < perPage {
 		perPage = limit

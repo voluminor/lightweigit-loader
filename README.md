@@ -129,7 +129,8 @@ A release asset implements:
 * `Name() string`
 * `URL() *url.URL`
 * `ContentType() string`
-* `Size() uint32`
+* `Size() uint32` — maximum representable size is ~4.29 GB (`math.MaxUint32` bytes). Assets larger than this will have
+  their size truncated.
 
 ## Working with tags
 
@@ -175,9 +176,7 @@ fmt.Println(tag.String())
 
 ### Stream tags
 
-`TagsStream` writes tags into a channel you provide.
-
-A safe consumption pattern is to run streaming in a goroutine and close the channel after it returns:
+`TagsStream` writes tags into a channel you provide. The channel is closed automatically when the stream finishes.
 
 ```go
 package main
@@ -201,7 +200,6 @@ func main() {
 	ch := make(chan lightweigit.ProviderTagInterface, 32)
 
 	go func() {
-		defer close(ch)
 		_ = obj.TagsStream(ctx, ch, 0) // limit=0 means provider-defined/default behavior
 	}()
 
@@ -268,7 +266,6 @@ func main() {
 	ch := make(chan lightweigit.ProviderReleaseInterface, 16)
 
 	go func() {
-		defer close(ch)
 		_ = obj.ReleasesStream(ctx, ch, 0)
 	}()
 
@@ -352,13 +349,15 @@ The library provides a shared HTTP client with a short timeout:
 * `lightweigit.HttpClient` defaults to 4 seconds
 * `lightweigit.ErrNotFound` is returned when the provider responds with HTTP 404
 
-If you need different networking settings (proxy, timeout, transport tuning), you can override the client:
+If you need different networking settings (timeout, proxy, custom TLS, transport tuning), you can replace the client
+before making any calls:
 
 ```go
 package main
 
 import (
 	"net/http"
+	"net/url"
 	"time"
 
 	lightweigit "github.com/voluminor/lightweigit-loader"
@@ -370,6 +369,35 @@ func main() {
 	}
 }
 ```
+
+Example with HTTP proxy:
+
+```go
+proxyURL, _ := url.Parse("http://proxy.example.com:8080")
+lightweigit.HttpClient = &http.Client{
+	Timeout: 10 * time.Second,
+	Transport: &http.Transport{
+		Proxy: http.ProxyURL(proxyURL),
+	},
+}
+```
+
+Example with SOCKS5 proxy (requires `golang.org/x/net/proxy`):
+
+```go
+lightweigit.HttpClient = &http.Client{
+	Timeout: 10 * time.Second,
+	Transport: &http.Transport{
+		Proxy: http.ProxyURL(&url.URL{
+			Scheme: "socks5",
+			Host:   "127.0.0.1:1080",
+		}),
+	},
+}
+```
+
+> **Note:** `lightweigit.HttpClient` is a shared global variable. Changing it affects all providers and all goroutines
+> in the process. Set it once during initialization before making any API calls.
 
 ## Design notes
 

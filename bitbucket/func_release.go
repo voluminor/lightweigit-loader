@@ -198,6 +198,8 @@ func (obj *Obj) ReleaseFind(findRelease string) (lightweigit.ProviderReleaseInte
 }
 
 func (obj *Obj) ReleasesStream(ctx context.Context, out chan lightweigit.ProviderReleaseInterface, limit int) error {
+	defer close(out)
+
 	perPage := 100
 	if limit > 0 && limit < perPage {
 		perPage = limit
@@ -208,7 +210,7 @@ func (obj *Obj) ReleasesStream(ctx context.Context, out chan lightweigit.Provide
 		assets = nil
 	}
 
-	u := fmt.Sprintf("refs/tags?pagelen=%d&sort=-name", perPage)
+	u := fmt.Sprintf("refs/tags?pagelen=%d&sort=-target.date", perPage)
 	sent := 0
 	for {
 		if ctx.Err() != nil {
