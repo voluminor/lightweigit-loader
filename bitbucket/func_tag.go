@@ -100,8 +100,15 @@ func (obj *Obj) TagFind(findTag string) (lightweigit.ProviderTagInterface, error
 	}, nil
 }
 
+// No adaptive page shrink here: Bitbucket paginates via opaque `next` cursor
+// URLs with pagelen baked in, so a mid-stream window remap is not possible.
+// The 50 default plus the 8 MiB GetJSON cap keeps pages within bounds.
 func (obj *Obj) TagsStream(ctx context.Context, out chan lightweigit.ProviderTagInterface, limit int) error {
-	perPage := 100
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	perPage := 50
 	if limit > 0 && limit < perPage {
 		perPage = limit
 	}
@@ -114,7 +121,7 @@ func (obj *Obj) TagsStream(ctx context.Context, out chan lightweigit.ProviderTag
 		}
 
 		var tr tagsRespObj
-		if err := obj.getJSON(u, &tr); err != nil {
+		if err := obj.getJSONAny(u, &tr); err != nil {
 			return err
 		}
 		if len(tr.Values) == 0 {
@@ -130,9 +137,11 @@ func (obj *Obj) TagsStream(ctx context.Context, out chan lightweigit.ProviderTag
 				return ctx.Err()
 			}
 
-			out <- &TagObj{
+			if err := lightweigit.Send[lightweigit.ProviderTagInterface](ctx, out, &TagObj{
 				Provider: obj,
 				name:     li.Name,
+			}); err != nil {
+				return err
 			}
 			sent++
 		}

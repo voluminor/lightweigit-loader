@@ -21,7 +21,7 @@ import (
 // // // // // // // // // // // // // // // //
 
 func UserAgent(obj ProviderInterface) string {
-	return fmt.Sprintf("%s %s; %s (Goland %s %s)", target.GlobalName, target.GlobalVersion, obj.Type(), runtime.GOOS, runtime.GOARCH)
+	return fmt.Sprintf("%s %s; %s (Goland %s %s)", target.Name, target.Version, obj.Type(), runtime.GOOS, runtime.GOARCH)
 }
 
 func GetJSON(obj ProviderInterface, u string, out any) error {
@@ -43,12 +43,24 @@ func GetJSON(obj ProviderInterface, u string, out any) error {
 	}
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		b, _ := io.ReadAll(io.LimitReader(resp.Body, 1<<20))
-		return fmt.Errorf("%s api error: %s: %s", obj.Type(), resp.Status, strings.TrimSpace(string(b)))
+		detail := strings.TrimSpace(string(b))
+		switch resp.StatusCode {
+		case http.StatusForbidden:
+			return fmt.Errorf("%s api error: %s: %s: %w", obj.Type(), resp.Status, detail, ErrForbidden)
+		case http.StatusTooManyRequests:
+			return fmt.Errorf("%s api error: %s: %s: %w", obj.Type(), resp.Status, detail, ErrTooManyRequests)
+		}
+		return fmt.Errorf("%s api error: %s: %s", obj.Type(), resp.Status, detail)
 	}
 
-	b, err := io.ReadAll(io.LimitReader(resp.Body, 2<<20))
+	// Read one byte past the cap: hitting it means the body was cut, so
+	// decoding would fail with a misleading JSON error. Report it explicitly.
+	b, err := io.ReadAll(io.LimitReader(resp.Body, maxJSONBody+1))
 	if err != nil {
 		return err
+	}
+	if len(b) > maxJSONBody {
+		return fmt.Errorf("%s api: body over %d bytes: %w", obj.Type(), maxJSONBody, ErrResponseTooLarge)
 	}
 	return json.Unmarshal(b, out)
 }

@@ -24,7 +24,7 @@ The library accepts a repository URL, **auto-detects the provider** (GitHub, Git
 
 ## Authentication
 
-This module does not implement authentication.
+The library itself does not implement authentication:
 
 - No tokens
 - No OAuth
@@ -32,6 +32,69 @@ This module does not implement authentication.
 - No private repository access helpers
 
 It simply accepts a repository URL and works with public endpoints. If the platform requires authorization for a request, the request will fail and the error will be returned.
+
+However, all API traffic goes through the shared `lightweigit.HttpClient`, so you can attach credentials yourself with a
+custom `http.RoundTripper`. This is useful even for public repositories: authenticated GitHub requests get a much higher
+rate limit (5000 requests/hour instead of 60/hour per IP).
+
+### GitHub API token
+
+```go
+package main
+
+import (
+  "net/http"
+  "os"
+  "time"
+
+  lightweigit "github.com/voluminor/lightweigit-loader"
+)
+
+type githubAuth struct {
+  token string
+}
+
+func (t githubAuth) RoundTrip(req *http.Request) (*http.Response, error) {
+  if req.URL.Host == "api.github.com" {
+    req = req.Clone(req.Context())
+    req.Header.Set("Authorization", "Bearer "+t.token)
+  }
+  return http.DefaultTransport.RoundTrip(req)
+}
+
+func main() {
+  lightweigit.HttpClient = &http.Client{
+    Timeout:   10 * time.Second,
+    Transport: githubAuth{token: os.Getenv("GITHUB_TOKEN")},
+  }
+
+  // ... use the library as usual
+}
+```
+
+### Several providers at once
+
+Each provider expects its own header, so scope credentials by host:
+
+```go
+type multiAuth struct{}
+
+func (multiAuth) RoundTrip(req *http.Request) (*http.Response, error) {
+req = req.Clone(req.Context())
+switch req.URL.Host {
+case "api.github.com":
+req.Header.Set("Authorization", "Bearer "+os.Getenv("GITHUB_TOKEN"))
+case "gitlab.com":
+req.Header.Set("PRIVATE-TOKEN", os.Getenv("GITLAB_TOKEN"))
+case "api.bitbucket.org":
+req.Header.Set("Authorization", "Bearer "+os.Getenv("BITBUCKET_TOKEN"))
+}
+return http.DefaultTransport.RoundTrip(req)
+}
+```
+
+> **Note:** asset and archive downloads (`ZIP()`, `TAR()`, asset `URL()`) are plain URLs that you fetch with your own
+> HTTP client — for private repositories attach the same credentials to those requests as well.
 
 ## Installation
 
@@ -401,6 +464,37 @@ lightweigit.HttpClient = &http.Client{
 
 > **Note:** `lightweigit.HttpClient` is a shared global variable. Changing it affects all providers and all goroutines
 > in the process. Set it once during initialization before making any API calls.
+
+## Development setup (working on this repository)
+
+The `target/` package (`meta_gen.go`, `map.go`, `global/`) is fully generated and git-ignored: release tags include it,
+but a fresh clone of `main` will not compile until you generate it.
+
+One-time bootstrap on Linux/macOS (bash):
+
+```bash
+bash _run/firststart.sh
+```
+
+This installs [gometagen](https://github.com/amazing-generators/gometagen), registers the git commit/push hooks, and
+runs `go generate` + `go mod tidy`.
+
+On Windows (or without bash) run the same steps manually:
+
+```bash
+go install github.com/amazing-generators/gometagen/cmd/gometagen@latest
+go run github.com/amazing-generators/gometagen/cmd/gometagen@latest git add-commit-hook -source .
+go run github.com/amazing-generators/gometagen/cmd/gometagen@latest git add-push-hook -source .
+go generate .
+go mod tidy
+```
+
+Note: the git hooks themselves are bash scripts (`_run/commit-hook.sh`, `_run/push-hook.sh`), so on Windows they
+require Git Bash (bundled with Git for Windows) or WSL.
+
+Versioning is driven by `_run/values.yml`: every `git push` bumps the patch version (push hook), and the release
+workflow bumps the minor version after publishing a tag. The commit hook runs `go test -short ./...` —
+network-dependent tests are skipped in short mode; run `go test ./...` for the full suite.
 
 ## Design notes
 

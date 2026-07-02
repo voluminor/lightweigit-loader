@@ -101,7 +101,10 @@ type releaseItemObj struct {
 func buildReleaseObj(obj *Obj, li releaseItemObj) *ReleaseObj {
 	assets := make([]lightweigit.ProviderReleaseAssetInterface, 0, len(li.Assets))
 	for _, a := range li.Assets {
-		u, _ := url.Parse(a.BrowserDownloadURL)
+		u, err := url.Parse(a.BrowserDownloadURL)
+		if err != nil || u == nil {
+			continue
+		}
 		assets = append(assets, &ReleaseAssetObj{
 			download:    *u,
 			contentType: a.ContentType,
@@ -133,7 +136,7 @@ func (obj *Obj) ReleaseLatest() (lightweigit.ProviderReleaseInterface, error) {
 		}
 	}
 
-	perPage := 100
+	perPage := 50
 	for page := 1; ; page++ {
 		var rels []releaseItemObj
 		if err := obj.getJSON(fmt.Sprintf("releases?per_page=%d&page=%d", perPage, page), &rels); err != nil {
@@ -167,7 +170,7 @@ func (obj *Obj) ReleaseFind(findRelease string) (lightweigit.ProviderReleaseInte
 		return nil, err
 	}
 
-	perPage := 100
+	perPage := 50
 	for page := 1; ; page++ {
 		var rels []releaseItemObj
 		if err := obj.getJSON(fmt.Sprintf("releases?per_page=%d&page=%d", perPage, page), &rels); err != nil {
@@ -190,40 +193,16 @@ func (obj *Obj) ReleaseFind(findRelease string) (lightweigit.ProviderReleaseInte
 }
 
 func (obj *Obj) ReleasesStream(ctx context.Context, out chan lightweigit.ProviderReleaseInterface, limit int) error {
-	perPage := 100
-	if limit > 0 && limit < perPage {
-		perPage = limit
-	}
-
-	sent := 0
-	for page := 1; ; page++ {
-		if ctx.Err() != nil {
-			return ctx.Err()
-		}
-
-		var rels []releaseItemObj
-		if err := obj.getJSON(fmt.Sprintf("releases?per_page=%d&page=%d", perPage, page), &rels); err != nil {
-			return err
-		}
-		if len(rels) == 0 {
-			return nil
-		}
-
-		for _, li := range rels {
-			if limit > 0 && sent >= limit {
-				return nil
+	return lightweigit.StreamPages(ctx, 50, limit,
+		func(perPage, page int) ([]releaseItemObj, error) {
+			var rels []releaseItemObj
+			if err := obj.getJSON(fmt.Sprintf("releases?per_page=%d&page=%d", perPage, page), &rels); err != nil {
+				return nil, err
 			}
-
-			if ctx.Err() != nil {
-				return ctx.Err()
-			}
-
-			out <- buildReleaseObj(obj, li)
-			sent++
-		}
-
-		if len(rels) < perPage {
-			return nil
-		}
-	}
+			return rels, nil
+		},
+		func(li releaseItemObj) error {
+			return lightweigit.Send[lightweigit.ProviderReleaseInterface](ctx, out, buildReleaseObj(obj, li))
+		},
+	)
 }

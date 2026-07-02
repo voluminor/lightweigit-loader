@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/url"
 	"path"
-	"strings"
 
 	"github.com/voluminor/lightweigit-loader"
 	"github.com/voluminor/lightweigit-loader/target"
@@ -90,13 +89,6 @@ type downloadsRespObj struct {
 	Previous string            `json:"previous"`
 }
 
-func (obj *Obj) getJSONAny(u string, out any) error {
-	if strings.HasPrefix(u, "http://") || strings.HasPrefix(u, "https://") {
-		return lightweigit.GetJSON(obj, u, &out)
-	}
-	return obj.getJSON(u, out)
-}
-
 func (obj *Obj) buildRelease(tagName string, assets []lightweigit.ProviderReleaseAssetInterface) *ReleaseObj {
 	return &ReleaseObj{
 		Provider: obj,
@@ -112,7 +104,11 @@ func (obj *Obj) buildRelease(tagName string, assets []lightweigit.ProviderReleas
 }
 
 func (obj *Obj) listDownloads(ctx context.Context, limit int) ([]lightweigit.ProviderReleaseAssetInterface, error) {
-	perPage := 100
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	perPage := 50
 	if limit > 0 && limit < perPage {
 		perPage = limit
 	}
@@ -122,7 +118,7 @@ func (obj *Obj) listDownloads(ctx context.Context, limit int) ([]lightweigit.Pro
 	u := fmt.Sprintf("downloads?pagelen=%d", perPage)
 	sent := 0
 	for {
-		if ctx != nil && ctx.Err() != nil {
+		if ctx.Err() != nil {
 			return nil, ctx.Err()
 		}
 
@@ -138,7 +134,7 @@ func (obj *Obj) listDownloads(ctx context.Context, limit int) ([]lightweigit.Pro
 			if limit > 0 && sent >= limit {
 				return assets, nil
 			}
-			if ctx != nil && ctx.Err() != nil {
+			if ctx.Err() != nil {
 				return nil, ctx.Err()
 			}
 
@@ -151,7 +147,10 @@ func (obj *Obj) listDownloads(ctx context.Context, limit int) ([]lightweigit.Pro
 				)
 			}
 
-			parsed, _ := url.Parse(dlURL)
+			parsed, err := url.Parse(dlURL)
+			if err != nil || parsed == nil {
+				continue
+			}
 			assets = append(assets, &ReleaseAssetObj{
 				download:    *parsed,
 				contentType: "",
@@ -197,8 +196,15 @@ func (obj *Obj) ReleaseFind(findRelease string) (lightweigit.ProviderReleaseInte
 	return obj.buildRelease(t.String(), assets), nil
 }
 
+// No adaptive page shrink here: Bitbucket paginates via opaque `next` cursor
+// URLs with pagelen baked in, so a mid-stream window remap is not possible.
+// The 50 default plus the 8 MiB GetJSON cap keeps pages within bounds.
 func (obj *Obj) ReleasesStream(ctx context.Context, out chan lightweigit.ProviderReleaseInterface, limit int) error {
-	perPage := 100
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	perPage := 50
 	if limit > 0 && limit < perPage {
 		perPage = limit
 	}
@@ -231,7 +237,9 @@ func (obj *Obj) ReleasesStream(ctx context.Context, out chan lightweigit.Provide
 				return ctx.Err()
 			}
 
-			out <- obj.buildRelease(li.Name, assets)
+			if err := lightweigit.Send[lightweigit.ProviderReleaseInterface](ctx, out, obj.buildRelease(li.Name, assets)); err != nil {
+				return err
+			}
 			sent++
 		}
 
