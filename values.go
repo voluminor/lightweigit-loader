@@ -16,6 +16,8 @@ var (
 	HttpClient = &http.Client{Timeout: 4 * time.Second}
 
 	ErrNotFound         = errors.New("not found")
+	ErrForbidden        = errors.New("forbidden")
+	ErrTooManyRequests  = errors.New("too many requests")
 	ErrModTag           = errors.New("invalid tag")
 	ErrResponseTooLarge = errors.New("response too large")
 )

@@ -1,11 +1,24 @@
 package gogsFamily
 
 import (
+	"errors"
 	"fmt"
 	"testing"
+
+	"github.com/voluminor/lightweigit-loader"
 )
 
 // // // // // // // // // // // // // // // //
+
+// skipIfLimited turns provider-side blocking (rate limits, bot protection)
+// into a skip: shared CI runner IPs are routinely throttled and that is not
+// a code failure.
+func skipIfLimited(t *testing.T, err error) {
+	t.Helper()
+	if errors.Is(err, lightweigit.ErrForbidden) || errors.Is(err, lightweigit.ErrTooManyRequests) {
+		t.Skipf("provider blocked the request: %v", err)
+	}
+}
 
 func TestName(t *testing.T) {
 	if testing.Short() {
@@ -24,12 +37,14 @@ func TestName(t *testing.T) {
 		t.Run(fmt.Sprintf("%d", pos), func(t *testing.T) {
 			obj, err := Parse(url)
 			if err != nil {
+				skipIfLimited(t, err)
 				t.Fatal(err)
 			}
 			t.Log(obj.String(), obj.Kind().String())
 
 			tag, err := obj.TagLatest()
 			if err != nil {
+				skipIfLimited(t, err)
 				t.Fatal(err)
 			}
 			t.Log(tag)
@@ -45,6 +60,7 @@ func TestName(t *testing.T) {
 
 			rel, err := obj.ReleaseLatest()
 			if err != nil {
+				skipIfLimited(t, err)
 				t.Fatal(err)
 			}
 

@@ -110,6 +110,12 @@ func validateGitLab(host, name string) (*Obj, error) {
 		return &Obj{host: host, name: name, id: md.Id}, nil
 	}
 
+	switch resp.StatusCode {
+	case http.StatusForbidden:
+		return nil, fmt.Errorf("metadata endpoint returned %s: %w", resp.Status, lightweigit.ErrForbidden)
+	case http.StatusTooManyRequests:
+		return nil, fmt.Errorf("metadata endpoint returned %s: %w", resp.Status, lightweigit.ErrTooManyRequests)
+	}
 	return nil, fmt.Errorf("metadata endpoint returned %s", resp.Status)
 }
 

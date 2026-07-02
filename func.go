@@ -43,7 +43,14 @@ func GetJSON(obj ProviderInterface, u string, out any) error {
 	}
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		b, _ := io.ReadAll(io.LimitReader(resp.Body, 1<<20))
-		return fmt.Errorf("%s api error: %s: %s", obj.Type(), resp.Status, strings.TrimSpace(string(b)))
+		detail := strings.TrimSpace(string(b))
+		switch resp.StatusCode {
+		case http.StatusForbidden:
+			return fmt.Errorf("%s api error: %s: %s: %w", obj.Type(), resp.Status, detail, ErrForbidden)
+		case http.StatusTooManyRequests:
+			return fmt.Errorf("%s api error: %s: %s: %w", obj.Type(), resp.Status, detail, ErrTooManyRequests)
+		}
+		return fmt.Errorf("%s api error: %s: %s", obj.Type(), resp.Status, detail)
 	}
 
 	// Read one byte past the cap: hitting it means the body was cut, so
