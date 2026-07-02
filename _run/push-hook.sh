@@ -1,22 +1,31 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
 echo "[HOOK]" "Push"
 
 run_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-values_dir="$run_dir/values"
-script_dir="$run_dir/scripts"
 root_path=$(cd "$run_dir/.." && pwd)
+manifest="$run_dir/values.yml"
+gometagen="github.com/amazing-generators/gometagen/cmd/gometagen@latest"
 
 #############################################################################
 
-bash "$script_dir/go_tidy_all.sh"
+(
+  cd "$root_path"
+  go generate .
+  go mod tidy
+)
 
-OLD_VER=$(bash "$script_dir/sys.sh" -v)
-VERSION=$(bash "$script_dir/sys.sh" -i -pa)
+OLD_VER=$(go run "$gometagen" version print -source "$manifest")
+VERSION=$(go run "$gometagen" version patch -source "$manifest")
 
-bash "$script_dir/go_creator_const.sh"
+(
+  cd "$root_path"
+  go generate .
+)
 
 echo "Updated patch-ver:" "$OLD_VER >> $VERSION"
 
 #############################################################################
 exit 0
-

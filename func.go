@@ -21,7 +21,7 @@ import (
 // // // // // // // // // // // // // // // //
 
 func UserAgent(obj ProviderInterface) string {
-	return fmt.Sprintf("%s %s; %s (Goland %s %s)", target.GlobalName, target.GlobalVersion, obj.Type(), runtime.GOOS, runtime.GOARCH)
+	return fmt.Sprintf("%s %s; %s (Goland %s %s)", target.Name, target.Version, obj.Type(), runtime.GOOS, runtime.GOARCH)
 }
 
 func GetJSON(obj ProviderInterface, u string, out any) error {

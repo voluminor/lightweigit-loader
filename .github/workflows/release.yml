@@ -101,9 +101,9 @@ jobs:
 
       - name: ✔️ Finish
         run: |
-          new_version=$(./_run/scripts/sys.sh --increment --minor)
+          new_version=$(go run github.com/amazing-generators/gometagen/cmd/gometagen@latest version minor -source ./_run/values.yml)
           
-          git add ./_run/values/ver.txt
+          git add ./_run/values.yml
           git commit -m "actions [$new_version] "$'\n'"Build: [${BUILD_VER}] >> [$new_version]"
           git push origin HEAD:main
           

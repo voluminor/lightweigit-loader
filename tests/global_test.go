@@ -9,6 +9,10 @@ import (
 // // // // // // // // // // // // // // // //
 
 func TestGlobal(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping network test in -short mode")
+	}
+
 	for _, url := range []string{
 		"https://bitbucket.org/satt/or-pas/src/master/OrPasInstance.xsd",
 		"https://gitea.com/gitea/util/src/branch/main/shellquote_test.go",

@@ -5,6 +5,10 @@ import "testing"
 // // // // // // // // // // // // // // // //
 
 func TestName(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping network test in -short mode")
+	}
+
 	obj, err := Parse("https://github.com/AI-translate-book/template-EN-to-RU/commits/v0.1.0")
 	if err != nil {
 		t.Fatal(err)

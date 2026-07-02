@@ -8,6 +8,10 @@ import (
 // // // // // // // // // // // // // // // //
 
 func TestName(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping network test in -short mode")
+	}
+
 	for pos, url := range []string{
 		"https://gitea.com/gitea/helm-gitea",
 		"https://forgejo.skynet.ie/Computer_Society/minecraft_vanilla-enhanced-modpack",

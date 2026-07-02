@@ -5,6 +5,10 @@ import "testing"
 // // // // // // // // // // // // // // // //
 
 func TestName(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping network test in -short mode")
+	}
+
 	obj, err := Parse("https://gitlab.com/gitlab-org/gitlab-foss/-/tags")
 	if err != nil {
 		t.Fatal(err)
