@@ -90,40 +90,16 @@ func (obj *Obj) TagFind(findTag string) (lightweigit.ProviderTagInterface, error
 }
 
 func (obj *Obj) TagsStream(ctx context.Context, out chan lightweigit.ProviderTagInterface, limit int) error {
-	perPage := 50
-	if limit > 0 && limit < perPage {
-		perPage = limit
-	}
-
-	sent := 0
-	for page := 1; ; page++ {
-		if ctx != nil && ctx.Err() != nil {
-			return ctx.Err()
-		}
-
-		var tags []tagItemObj
-		err := obj.getJSON(fmt.Sprintf("tags?limit=%d&page=%d", perPage, page), &tags)
-		if err != nil {
-			return err
-		}
-		if len(tags) == 0 {
-			return nil
-		}
-
-		for _, li := range tags {
-			if limit > 0 && sent >= limit {
-				return nil
+	return lightweigit.StreamPages(ctx, 50, limit,
+		func(perPage, page int) ([]tagItemObj, error) {
+			var tags []tagItemObj
+			if err := obj.getJSON(fmt.Sprintf("tags?limit=%d&page=%d", perPage, page), &tags); err != nil {
+				return nil, err
 			}
-			if ctx != nil && ctx.Err() != nil {
-				return ctx.Err()
-			}
-
-			out <- &TagObj{Provider: obj, name: li.Name}
-			sent++
-		}
-
-		if len(tags) < perPage {
-			return nil
-		}
-	}
+			return tags, nil
+		},
+		func(li tagItemObj) error {
+			return lightweigit.Send[lightweigit.ProviderTagInterface](ctx, out, &TagObj{Provider: obj, name: li.Name})
+		},
+	)
 }

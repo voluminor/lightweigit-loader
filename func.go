@@ -46,9 +46,14 @@ func GetJSON(obj ProviderInterface, u string, out any) error {
 		return fmt.Errorf("%s api error: %s: %s", obj.Type(), resp.Status, strings.TrimSpace(string(b)))
 	}
 
-	b, err := io.ReadAll(io.LimitReader(resp.Body, 2<<20))
+	// Read one byte past the cap: hitting it means the body was cut, so
+	// decoding would fail with a misleading JSON error. Report it explicitly.
+	b, err := io.ReadAll(io.LimitReader(resp.Body, maxJSONBody+1))
 	if err != nil {
 		return err
+	}
+	if len(b) > maxJSONBody {
+		return fmt.Errorf("%s api: body over %d bytes: %w", obj.Type(), maxJSONBody, ErrResponseTooLarge)
 	}
 	return json.Unmarshal(b, out)
 }

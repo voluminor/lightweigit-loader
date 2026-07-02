@@ -214,39 +214,16 @@ func (obj *Obj) ReleaseFind(findRelease string) (lightweigit.ProviderReleaseInte
 }
 
 func (obj *Obj) ReleasesStream(ctx context.Context, out chan lightweigit.ProviderReleaseInterface, limit int) error {
-	perPage := 50
-	if limit > 0 && limit < perPage {
-		perPage = limit
-	}
-
-	sent := 0
-	for page := 1; ; page++ {
-		if ctx != nil && ctx.Err() != nil {
-			return ctx.Err()
-		}
-
-		var rels []releaseItemObj
-		if err := obj.getJSON(fmt.Sprintf("releases?limit=%d&page=%d", perPage, page), &rels); err != nil {
-			return err
-		}
-		if len(rels) == 0 {
-			return nil
-		}
-
-		for _, li := range rels {
-			if limit > 0 && sent >= limit {
-				return nil
+	return lightweigit.StreamPages(ctx, 50, limit,
+		func(perPage, page int) ([]releaseItemObj, error) {
+			var rels []releaseItemObj
+			if err := obj.getJSON(fmt.Sprintf("releases?limit=%d&page=%d", perPage, page), &rels); err != nil {
+				return nil, err
 			}
-			if ctx != nil && ctx.Err() != nil {
-				return ctx.Err()
-			}
-
-			out <- buildReleaseObj(obj, li)
-			sent++
-		}
-
-		if len(rels) < perPage {
-			return nil
-		}
-	}
+			return rels, nil
+		},
+		func(li releaseItemObj) error {
+			return lightweigit.Send[lightweigit.ProviderReleaseInterface](ctx, out, buildReleaseObj(obj, li))
+		},
+	)
 }

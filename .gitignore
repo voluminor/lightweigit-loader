@@ -1,5 +1,6 @@
 /target/
 /tmp/
+.idea/
 *.bin
 *.exe
 .env
